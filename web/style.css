@@ -1,0 +1,1335 @@
+/* Demonstrator — Design nach 3-fls.ai.
+ * Kontrastregel von dort: weisser Text nie auf --cyan, sondern auf
+ * --primary-deep. */
+
+/* ══════════════════════════════════════════════════════════════════════
+   DIE FARBEN STEHEN NICHT MEHR HIER, SONDERN IN palette.js.
+   Seit dem 20.08.2026 gibt es zwei Fassungen — hell für den Hörsaal, dunkel
+   für den Schreibtisch. Damit sie nicht auseinanderlaufen, schreibt
+   palette.js beide Sätze beim Laden als Variablen auf <html>. Was hier
+   steht, ist der RÜCKFALL für den Fall, dass das Skript nicht läuft: die
+   helle Fassung, weil sie die Standardfassung ist.
+
+   Wer eine Farbe ändern will, ändert sie in palette.js. Ein fester Farbwert
+   in dieser Datei wirkt nur in einer der beiden Fassungen und ist damit ein
+   Fehler — auch dann, wenn er in der Fassung, die man gerade ansieht,
+   richtig aussieht.
+   ══════════════════════════════════════════════════════════════════════ */
+:root {
+  --cyan: #01aeed; --teal: #1482ac; --blau: #045273;
+  --magenta: #c81164; --gruen: #2f7d32; --wahl: #b45309;
+  --primary-deep: #0a6189; --primary-deep-hover: #0c76a8;
+  --bg: #ffffff; --bg-card: #f6f8fa; --bg-elev: #eef1f5;
+  --text: #1c2128; --text-muted: #57606a; --rand: #d0d7de;
+  --text-schwach: #6e7781; --text-id: #57606a;
+  --auf-marke: #ffffff; --auf-cyan: #04202c; --auf-fam: #ffffff;
+  --diagrammtext: #10161d; --diagrammtext-kontur: rgb(255 255 255 / .92);
+  --feld: #eef3f9; --knopf: #8b95a1;
+  --schritt-2: #5b21b6; --schritt-3: #a11250; --schritt-4: #b45309;
+  --marke-text: #0a6189;
+  --marke-rgb: 1 174 237; --wahl-rgb: 180 83 9; --gruen-rgb: 47 125 50;
+  --magenta-rgb: 200 17 100; --rand-rgb: 208 215 222;
+  --karte-rgb: 246 248 250; --elev-rgb: 238 241 245;
+  --grund-rgb: 255 255 255; --muted-rgb: 87 96 106;
+  --grad-accent: linear-gradient(90deg, var(--cyan) 0%, var(--teal) 100%);
+  --glow: 0 0 30px -14px rgb(1 174 237 / 0.45);
+  --schatten: 0 2px 18px -12px rgb(27 31 36 / .45);
+  --font-sans: "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Barlow Semi Condensed", "Segoe UI Semibold", "Segoe UI", sans-serif;
+  --font-mono: "Cascadia Mono", Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; font-family: var(--font-sans);
+             background: var(--bg); color: var(--text); font-size: 16px; }
+body { display: flex; flex-direction: column; }
+button { font-family: inherit; }
+
+/* ── Kopfzeile ── */
+header.oben { flex: none; background: var(--bg-card);
+              border-bottom: 1px solid var(--rand); }
+header .band { height: 3px; background: var(--grad-accent); }
+header .inhalt { display: flex; align-items: center; gap: 20px;
+                 padding: 12px 26px; }
+.home { display: flex; align-items: center; gap: 9px; cursor: pointer;
+        background: var(--bg-elev); border: 1px solid var(--rand);
+        border-radius: 9px; padding: 9px 15px; color: var(--text);
+        transition: border-color .15s, background .15s; }
+.home:hover { border-color: var(--cyan); background: var(--primary-deep);
+              color: var(--auf-marke); }
+.home .zeichen { font-size: 19px; color: var(--marke-text); }
+.home .wort { font-size: 13.5px; font-weight: 600; }
+.titelblock { flex: 1; }
+.titelblock .unter { font-family: var(--font-display); font-size: 11.5px;
+                     text-transform: uppercase; letter-spacing: .1em;
+                     color: var(--marke-text); }
+.titelblock h1 { margin: 1px 0 0; font-family: var(--font-display);
+                 font-size: 25px; font-weight: 600; }
+.modellinfo { text-align: right; font-size: 11.5px; line-height: 1.5;
+              color: var(--text-muted); }
+.modellinfo b { display: block; color: var(--marke-text); font-size: 12.5px; }
+
+main#scroller { flex: 1; overflow-y: auto; }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 26px 26px 60px; }
+
+footer.unten { flex: none; background: var(--bg-card);
+               border-top: 1px solid var(--rand); padding: 13px 26px;
+               font-size: 12px; color: var(--text-muted);
+               display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+footer strong { color: var(--text); font-weight: 600; }
+footer .rechts { margin-left: auto; }
+
+/* ── Startseite: Kachelraster ── */
+.hero { margin-bottom: 26px; }
+.hero .eyebrow { font-family: var(--font-display); font-size: 12px;
+                 text-transform: uppercase; letter-spacing: .1em;
+                 color: var(--marke-text); }
+.hero h2 { font-family: var(--font-display); font-size: 34px; margin: 4px 0 10px; }
+.hero .lead { color: var(--text-muted); max-width: 78ch; line-height: 1.62; }
+.kennzahlen { display: flex; gap: 30px; flex-wrap: wrap; margin-top: 18px;
+              padding-top: 16px; border-top: 1px solid var(--rand); }
+.kennzahl .zahl { font-family: var(--font-display); font-size: 25px;
+                  color: var(--marke-text); }
+.kennzahl .was { font-size: 11.5px; color: var(--text-muted); }
+
+.gruppe { font-family: var(--font-display); text-transform: uppercase;
+          letter-spacing: .1em; font-size: 12px; color: var(--text-muted);
+          margin: 30px 0 12px; }
+.raster { display: grid; gap: 13px;
+          grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); }
+.kachel { background: var(--bg-card); border: 1px solid var(--rand);
+          border-radius: 12px; padding: 17px 18px; cursor: pointer;
+          display: flex; flex-direction: column; gap: 7px;
+          transition: border-color .15s, transform .15s, box-shadow .2s; }
+.kachel:hover { border-color: var(--cyan); transform: translateY(-2px);
+                box-shadow: var(--glow); }
+.kachel .nr { font-family: var(--font-display); font-size: 12px;
+              /* NIE die Randfarbe als Schriftfarbe. --rand (var(--rand)) ist
+                 dafuer gedacht, einen Kasten vom Grund abzusetzen — als
+                 Text auf --bg-card sind das 1,23:1, also schwarz auf
+                 schwarz. Genau das war der Befund vom 13.08. */
+              color: var(--text-schwach); font-weight: 700; }
+.kachel h3 { margin: 0; font-family: var(--font-display); font-size: 18px; }
+.kachel p { margin: 0; font-size: 13px; color: var(--text-muted);
+            line-height: 1.55; flex: 1; }
+.kachel .fuss { display: flex; justify-content: space-between;
+                align-items: center; font-size: 11.5px; color: var(--text-muted);
+                margin-top: 4px; }
+.kachel .pfeil { color: var(--marke-text); }
+
+/* ── Kachelseite ── */
+.satzfeld { background: var(--bg-card); border: 1px solid var(--rand);
+            border-radius: 12px; padding: 15px 18px; margin-bottom: 18px; }
+.satzfeld label { display: block; font-family: var(--font-display);
+                  text-transform: uppercase; letter-spacing: .09em;
+                  font-size: 11.5px; color: var(--text-muted); margin-bottom: 7px; }
+.satzfeld .zeile { display: flex; gap: 10px; flex-wrap: wrap; }
+.satzfeld input[type=text] { flex: 1; min-width: 300px; background: var(--bg-elev);
+                             border: 1px solid var(--rand); border-radius: 8px;
+                             color: var(--text); font-family: var(--font-mono);
+                             font-size: 15px; padding: 11px 14px; }
+.satzfeld input[type=text]:focus { outline: none; border-color: var(--cyan);
+                                   box-shadow: var(--glow); }
+.satzfeld .beispiele { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 9px; }
+
+.feld { background: var(--bg-card); border: 1px solid var(--rand);
+        border-radius: 12px; padding: 17px 19px; margin-top: 16px; }
+.feld h4 { margin: 0 0 11px; font-family: var(--font-display); font-size: 15px; }
+h3.titel { font-family: var(--font-display); font-size: 26px; margin: 0 0 7px; }
+p.lead { color: var(--text-muted); max-width: 76ch; line-height: 1.62;
+         margin: 0 0 16px; }
+.hinweis { font-size: 12.5px; color: var(--text-muted); line-height: 1.6;
+           margin: 9px 0 0; }
+.warnung { padding: 13px 16px; border-radius: 9px; margin-top: 14px;
+           background: rgb(var(--wahl-rgb) / .1); border: 1px solid var(--wahl);
+           font-size: 13.5px; }
+
+.btn { background: var(--bg-elev); border: 1px solid var(--rand);
+       color: var(--text); border-radius: 7px; padding: 7px 13px;
+       font-size: 13px; cursor: pointer; }
+.btn:hover { border-color: var(--cyan); }
+.btn.primaer { background: var(--primary-deep); border-color: var(--cyan);
+               color: var(--auf-marke); }
+.btn.an { background: rgb(var(--magenta-rgb) / .18); border-color: var(--magenta); }
+.chip { background: var(--bg-elev); border: 1px solid var(--rand);
+        color: var(--text); border-radius: 6px; padding: 4px 10px;
+        font-size: 12.5px; cursor: pointer; font-family: var(--font-mono); }
+.chip:hover { border-color: var(--teal); }
+.chip.aktiv { background: var(--primary-deep); border-color: var(--cyan);
+              color: var(--auf-marke); }
+.reihe { display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+         margin: 9px 0; }
+.reihe .beschriftung { font-family: var(--font-display); font-size: 11px;
+                       text-transform: uppercase; letter-spacing: .08em;
+                       color: var(--text-muted); margin-right: 4px; }
+
+.regler { display: flex; align-items: center; gap: 12px; margin: 7px 0; }
+.regler .name { width: 200px; flex: none; font-size: 12.5px; color: var(--text-muted); }
+.regler input[type=range] { flex: 1; max-width: 360px; accent-color: var(--cyan); }
+.regler .wert { width: 70px; text-align: right; font-family: var(--font-mono);
+                font-size: 13px; color: var(--marke-text); }
+
+.tokenreihe { display: flex; flex-wrap: wrap; gap: 4px; }
+.tok { display: flex; flex-direction: column; align-items: center;
+       background: var(--bg-elev); border: 1px solid var(--rand);
+       border-radius: 5px; padding: 3px 7px 2px; cursor: pointer; }
+.tok:hover { border-color: var(--cyan); }
+.tok .stueck { font-family: var(--font-mono); font-size: 13px; white-space: pre; }
+/* 9 px in Grau war gemessen nur 2,21:1 gegen den Grund — bei so kleiner
+   Schrift frisst die Kantenglättung den Rest des Kontrasts weg. Lesbar
+   wird sie erst eine Spur größer UND heller. (pruefe_kontrast.js) */
+.tok .id { font-size: 9.5px; color: var(--text-id); }
+.tok.aktiv { background: var(--primary-deep); border-color: var(--cyan);
+             color: var(--auf-marke); }
+/* Die Kennung setzt ihre eigene Farbe und ueberschreibt damit die des
+   aktiven Stuecks — auf dem dunklen Markengrund war sie dann grau auf
+   dunkelblau. Gefunden von pruefe_kontrast.js in der hellen Fassung
+   (20.08.2026), gilt aber in beiden. */
+.tok.aktiv .id { color: var(--auf-marke); opacity: .82; }
+
+table.tab { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.tab th { text-align: left; padding: 6px 9px; font-size: 11px;
+               text-transform: uppercase; letter-spacing: .07em;
+               color: var(--text-muted); border-bottom: 1px solid var(--rand); }
+table.tab td { padding: 5px 9px; border-bottom: 1px solid rgb(var(--rand-rgb) / .5); }
+table.tab td.zahl { text-align: right; font-family: var(--font-mono); font-size: 12px; }
+table.tab td.mono { font-family: var(--font-mono); font-size: 12px; }
+
+.verteilung { display: flex; flex-direction: column; gap: 3px; }
+.vzeile { display: flex; align-items: center; gap: 11px; }
+.vzeile .wort { width: 130px; flex: none; font-family: var(--font-mono);
+                font-size: 12.5px; white-space: pre; overflow: hidden;
+                text-overflow: ellipsis; }
+.vzeile .spur { flex: 1; height: 13px; background: var(--bg-elev);
+                border-radius: 3px; overflow: hidden; }
+.vzeile .bar { height: 100%; background: var(--grad-accent); border-radius: 3px;
+               transition: width .35s ease; }
+.vzeile .wert { width: 62px; text-align: right; font-family: var(--font-mono);
+                font-size: 12px; color: var(--marke-text); }
+
+canvas { display: block; max-width: 100%; height: auto; }
+.laedt { padding: 30px; text-align: center; color: var(--text-muted);
+         font-size: 13.5px; }
+.laedt::after { content: " ·"; animation: punkte 1s steps(4) infinite; }
+@keyframes punkte { to { content: " ····"; } }
+
+.karten { display: flex; gap: 12px; flex-wrap: wrap; }
+.karten .karte { flex: 1 1 220px; background: var(--bg-elev);
+                 border: 1px solid var(--rand); border-radius: 10px;
+                 padding: 12px 14px; }
+.karten .karte h5 { margin: 0 0 8px; font-family: var(--font-display);
+                    font-size: 13.5px; font-weight: 600; }
+
+.gitter { display: flex; flex-direction: column; gap: 2px; overflow-x: auto; }
+.gitter .zeile { display: flex; gap: 2px; align-items: center; }
+.gitter .kopf { width: 150px; flex: none; font-size: 11px;
+                color: var(--text-muted); white-space: nowrap;
+                overflow: hidden; text-overflow: ellipsis; }
+.gitter .zelle { width: 78px; flex: none; text-align: center; padding: 4px 2px;
+                 border-radius: 3px; font-family: var(--font-mono);
+                 font-size: 10px; white-space: nowrap; overflow: hidden;
+                 text-overflow: ellipsis; }
+.gitter .zeile.titelzeile .zelle { color: var(--text); background: none; }
+
+.fortsetzung { margin-top: 12px; padding: 14px 16px; background: var(--bg-elev);
+               border-radius: 8px; font-family: var(--font-mono);
+               font-size: 14px; line-height: 1.8; white-space: pre-wrap; }
+.fortsetzung .vorher { color: var(--text-muted); }
+.fortsetzung .neu { color: var(--marke-text); }
+.minitok { display: inline-block; background: var(--bg-elev);
+           border: 1px solid var(--rand); border-radius: 3px; padding: 1px 5px;
+           margin: 1px; font-family: var(--font-mono); font-size: 11px;
+           white-space: pre; }
+
+/* ── Kopfansicht: Linien zwischen den Satzteilen ── */
+.linien-buehne { background: var(--bg-card); border: 1px solid var(--rand);
+                 border-radius: 12px; padding: 10px 14px; margin-top: 16px;
+                 overflow-x: auto; }
+.linien-svg { display: block; }
+.linien-svg text { font-family: var(--font-mono); font-size: 13px;
+                   fill: var(--text-muted); }
+.linien-svg text.gewaehlt { fill: var(--text); font-weight: 700; }
+.linien-svg rect { fill: transparent; }
+.linien-svg rect.gewaehlt { fill: rgb(var(--marke-rgb) / .12); }
+.linien-svg .seite.links g.stueck:hover rect { fill: rgb(var(--marke-rgb) / .08); }
+
+.vert-svg { display: block; }
+.vert-svg text { font-family: var(--font-mono); font-size: 12.5px; fill: var(--text); }
+.vert-svg text.wert { fill: var(--marke-text); font-size: 12px; }
+.vert-svg rect.bar { fill: var(--marke-text); }
+
+.anleitung { margin: 0; padding-left: 20px; }
+.anleitung li { font-size: 13.5px; line-height: 1.62; color: var(--text-muted);
+                margin-bottom: 6px; }
+.anleitung li b { color: var(--text); font-weight: 600; }
+.klartext { background: rgb(var(--marke-rgb) / .07); border-left: 3px solid var(--cyan);
+            border-radius: 0 8px 8px 0; padding: 13px 16px; margin-top: 16px; }
+.klartext p { margin: 0; font-size: 14.5px; line-height: 1.6; }
+.klartext p.klein { margin-top: 6px; font-size: 12px; color: var(--text-muted); }
+.klartext b { color: var(--marke-text); }
+.linien-svg text.spaltenkopf { font-family: var(--font-sans); font-size: 11.5px;
+                               fill: var(--text-muted); font-style: italic; }
+
+/* ── D3-Bausteine ── */
+.d3-feld, .d3-klein, .d3-balken, .d3-saeulen, .d3-kurve, .d3-gitter {
+  display: block; overflow: visible; }
+.d3-feld text, .d3-gitter text { font-family: var(--font-mono); font-size: 11px;
+                                 fill: var(--text-muted); }
+.d3-balken text { font-family: var(--font-mono); font-size: 12.5px; fill: var(--text); }
+/* Farbe von Balken und Wert setzt zeichnen.js je Wert — hier nur die
+   Grundfarbe, falls ein Balken vor der ersten Überblendung sichtbar wird. */
+.d3-balken text.wert { fill: var(--marke-text); font-size: 12px; }
+.d3-balken rect.bar { fill: var(--primary-deep); }
+.d3-saeulen .achse line { stroke: var(--rand); }
+.d3-saeulen text { font-family: var(--font-mono); font-size: 10.5px; fill: var(--text-muted); }
+/* Linie, Punkte und Legende tragen DIESELBE Farbe. Mit --cyan fuer die
+   Linie und --marke-text fuer die Punkte liefen sie in der hellen
+   Fassung auseinander, und die Legende stimmte mit keiner von beiden. */
+.d3-kurve .kurve { fill: none; stroke: var(--marke-text); stroke-width: 2.5; }
+.d3-kurve .flaeche { fill: rgb(var(--marke-rgb) / .12); }
+.d3-kurve circle { fill: var(--marke-text); }
+.d3-kurve circle.wechsel { fill: var(--gruen); stroke: var(--bg); stroke-width: 2; }
+.d3-kurve .achse line { stroke: var(--rand); }
+.d3-kurve .achse text { font-family: var(--font-mono); font-size: 10.5px;
+                        fill: var(--text-muted); }
+.d3-kurve .wechsel text { font-family: var(--font-mono); font-size: 11.5px;
+                          fill: var(--gruen); }
+.d3-gitter .kopf text, .d3-gitter .beschriftung text { fill: var(--text-muted); }
+
+/* TEXT AUF EINER EINGEFÄRBTEN FLÄCHE BRAUCHT EINE KONTUR.
+   Die Zahl in einer Gitterzelle steht auf der Hitzefarbe dieser Zelle —
+   die läuft von fast schwarz bis hell. EINE Schriftfarbe kann darauf nicht
+   durchgehend lesbar sein; gemessen waren es 1,36:1 bis 2,41:1 (unter
+   3,0:1 wird Text erraten statt gelesen). Weiße Schrift mit dunkler
+   Kontur ist auf jedem Untergrund lesbar — `paint-order: stroke` zeichnet
+   die Kontur UNTER die Füllung, sonst fräse sie die Buchstaben aus.
+   Gefunden von pruefe_kontrast.js, 13.08.2026. */
+.d3-gitter .zelltext text { font-family: var(--font-mono); font-size: 10px;
+      fill: var(--diagrammtext); stroke: var(--diagrammtext-kontur); stroke-width: 2.6px;
+      paint-order: stroke fill; stroke-linejoin: round; }
+
+/* Die Erklaerung steht immer ganz oben — vor dem Satzfeld. */
+.erklaerung { margin-bottom: 4px; }
+.erklaerung h3.titel { margin-top: 0; }
+.erklaerung .feld { margin-top: 12px; margin-bottom: 4px; }
+/* #55606b war 2,44:1 gegen den Grund — als "dezent" gemeint, im Ergebnis
+   unlesbar. Dezent wird über die Schriftgröße geregelt, nicht darüber,
+   dass man den Text fast weglässt. (pruefe_kontrast.js) */
+.linien-svg tspan.tokenid { fill: var(--text-schwach); font-size: 10.5px; }
+.linien-svg text.gewaehlt tspan.tokenid { fill: var(--marke-text); }
+
+/* ── Satzband: der Satz, eingefaerbt nach Aufmerksamkeit ── */
+.satzband { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; }
+.satzband .bandwort { display: flex; flex-direction: column; align-items: center;
+                      min-width: 46px; }
+.satzband .wort { font-family: var(--font-mono); font-size: 14px;
+                  padding: 6px 9px; border-radius: 5px; white-space: pre;
+                  border: 1px solid transparent; transition: background .4s; }
+.satzband .anteil { font-family: var(--font-mono); font-size: 10.5px;
+                    color: var(--text-muted); margin-top: 3px; }
+/* #4a535e war 2,10:1 — als "liegt in der Zukunft, deshalb blass" gemeint,
+   im Ergebnis nicht mehr zu lesen. Blass wird ueber den gestrichelten
+   Rahmen und die fehlende Fuellung gesagt, nicht darueber, dass man den
+   Text weglaesst. */
+.satzband .zukunft .wort { border: 1px dashed var(--rand); color: var(--text-schwach); }
+.satzband .zukunft .anteil { color: var(--text-schwach); }
+.satzband .groesster .wort { border-color: var(--wahl); }
+.satzband .groesster .anteil { color: var(--wahl); }
+
+/* ── 3D-Raum ── */
+.raum-buehne { border-radius: 10px; overflow: hidden; background: var(--bg);
+               border: 1px solid var(--rand); min-height: 420px; }
+.raum-buehne canvas { display: block; cursor: grab; }
+.raum-buehne canvas:active { cursor: grabbing; }
+
+/* ══ Landkarte: alle Schichten mal alle Köpfe ══ */
+.d3-landkarte { display: block; margin: 4px 0 2px; }
+.d3-landkarte text { font-family: var(--font-mono); font-size: 9.5px;
+                     fill: var(--text-muted); }
+.d3-landkarte .kopf text { font-size: 9px; }
+.d3-landkarte text.achsentitel { font-family: var(--font-display); font-size: 11px;
+                                 fill: var(--text-muted); letter-spacing: .06em; }
+/* die Fusszeile der Landkarte bleibt leise — die Achsentitel tragen die
+   Aussage, sie ist nur die ausfuehrliche Wiederholung */
+.d3-landkarte text.achsentitel.leise { font-family: var(--font-mono) !important;
+                           font-size: 9.5px !important;
+                           fill: var(--text-muted) !important; }
+
+/* ══ Dimensionsfeld: Stufen mal alle 2 048 Zahlen ══ */
+.dimfeld { position: relative; display: flex; align-items: flex-start;
+           margin: 6px 0 4px; }
+.dimfeld-namen { flex: none; padding-right: 9px; text-align: right; }
+.dimfeld-namen div { font-family: var(--font-mono); font-size: 8.5px;
+                     line-height: 1; color: var(--text-muted);
+                     display: flex; align-items: center; justify-content: flex-end;
+                     white-space: nowrap; overflow: hidden; }
+.dimfeld-huelle { position: relative; flex: 1; min-width: 0; }
+.dimfeld-bild { width: 100%; image-rendering: pixelated;
+                border: 1px solid var(--rand); border-radius: 3px;
+                cursor: crosshair; display: block; }
+.dimfeld-marke { position: absolute; top: 0; bottom: 0; width: 2px;
+                 background: var(--wahl); pointer-events: none; display: none;
+                 box-shadow: 0 0 7px var(--wahl); }
+.dimfeld-markentext { position: absolute; top: -2px; display: none;
+                      transform: translateX(6px); pointer-events: none;
+                      font-family: var(--font-mono); font-size: 10.5px;
+                      color: var(--wahl); background: rgb(var(--grund-rgb) / .82);
+                      padding: 2px 6px; border-radius: 3px; white-space: nowrap; }
+.dimfeld-fuss { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 7px;
+                font-family: var(--font-mono); font-size: 11px;
+                color: var(--text-muted); }
+/* Achsentitel des Dimensionsfeldes — DOM statt SVG, weil das Bild eine
+   Leinwand mit einem Bildpunkt je Zahl ist. */
+/* Achsenbeschriftung fuer Bilder ohne SVG-Achsen (3D-Raum) */
+.achsenzeile { font-family: var(--font-display); font-size: 12.5px;
+               color: var(--marke-text); letter-spacing: .04em; margin: 2px 0 5px; }
+.dimfeld-ytitel { font-family: var(--font-display); font-size: 12.5px;
+                  color: var(--marke-text); letter-spacing: .04em; margin: 2px 0 3px; }
+.dimfeld-xtitel { display: flex; margin-top: 4px; }
+.dimfeld-xtitel span { flex: none; }
+.dimfeld-xtitel .titel { flex: 1; text-align: center;
+                  font-family: var(--font-display); font-size: 12.5px;
+                  color: var(--marke-text); letter-spacing: .04em; }
+
+/* ══ Positionsfeld: Schicht mal Position ══ */
+.d3-posfeld { display: block; margin: 4px 0; }
+.d3-posfeld text { font-family: var(--font-mono); font-size: 10px;
+                   fill: var(--text-muted); }
+
+/* ══ Farblegende für zwei Bauteile ══ */
+.legende { display: flex; gap: 20px; flex-wrap: wrap; margin: 8px 0 2px;
+           font-size: 12.5px; color: var(--text-muted); }
+.legende span.marke { display: inline-block; width: 13px; height: 13px;
+                      border-radius: 3px; margin-right: 7px;
+                      vertical-align: -2px; }
+
+/* ══ Befund: die Aussage, nicht nur das Bild ══
+   Jede Anschauung bekommt einen Satz, der sagt, was in ihr zu sehen ist.
+   Die Zahlen darin kommen aus derselben Antwort wie das Bild. */
+.befund { background: rgb(var(--gruen-rgb) / .09); border-left: 3px solid var(--gruen);
+          border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 10px 0 4px; }
+.befund p { margin: 0 0 6px; font-size: 14.5px; line-height: 1.6; }
+.befund p:last-child { margin-bottom: 0; }
+.befund b { color: var(--gruen); }
+.befund .zahl { font-family: var(--font-mono); color: var(--text); }
+
+/* ══ Roter Faden: wie die Kacheln zusammenhängen ══ */
+.faden { display: flex; gap: 12px; flex-wrap: wrap; align-items: stretch;
+         margin: 26px 0 6px; }
+.faden .schritt { flex: 1 1 260px; background: var(--bg-card);
+                  border: 1px solid var(--rand); border-radius: 10px;
+                  padding: 13px 16px; cursor: pointer;
+                  transition: border-color .15s, transform .15s; }
+.faden .schritt:hover { border-color: var(--cyan); transform: translateY(-2px); }
+.faden .schritt .rolle { font-family: var(--font-display); font-size: 11px;
+                         text-transform: uppercase; letter-spacing: .09em;
+                         color: var(--marke-text); margin-bottom: 4px; }
+.faden .schritt .was { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.faden .schritt .warum { font-size: 12.5px; color: var(--text-muted);
+                         line-height: 1.5; }
+
+/* Verweis mitten im Text auf eine andere Kachel */
+.verweis { color: var(--marke-text); cursor: pointer; border-bottom: 1px dotted var(--cyan); }
+.verweis:hover { color: var(--text); border-bottom-color: var(--text); }
+
+/* Stationsanzeige: wo in der Kette stehe ich */
+.station { display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+           font-size: 12px; color: var(--text-muted); flex-wrap: wrap; }
+/* Auch hier war --rand als Fuellung praktisch unsichtbar — die Leiste
+   zeigte nur den aktiven Punkt und sonst nichts. */
+.station .punkt { width: 8px; height: 8px; border-radius: 50%;
+                  background: var(--knopf); cursor: pointer; }
+.station .punkt.aktiv { background: var(--tf, var(--cyan));
+                        box-shadow: 0 0 8px var(--tf, var(--cyan)); }
+.station .punkt.gruppe { border-radius: 2px; background: transparent; }
+
+/* ══ Die Kachel sagt, welche Station des grossen Bildes sie vergroessert ══
+   Bis zum 15.08.2026 stand hier "Station 3 von 14" — das zaehlte die
+   KACHELN und nannte das Station. Jetzt nennt die Zeile die Stelle im
+   Weg, faerbt sie wie im Bild und fuehrt dorthin zurueck. */
+.station .zum-weg { cursor: pointer; color: var(--marke-text); font-weight: 600;
+                    border: 1px solid var(--rand); border-radius: 7px;
+                    padding: 4px 10px; transition: border-color .15s,
+                    background .15s; }
+.station .zum-weg:hover { border-color: var(--cyan);
+                          background: var(--primary-deep);
+                          color: var(--auf-marke); }
+.station .vergroessert { border-left: 3px solid var(--tf, var(--rand));
+                         padding-left: 9px; }
+.station .vergroessert b { color: var(--text); }
+/* Eine Station, die noch keine Kachel hat: sichtbar, aber offen. */
+.station .punkt.offen { background: transparent;
+                        border: 1.5px dashed var(--tf, var(--knopf));
+                        width: 9px; height: 9px; cursor: default; }
+
+/* Die Farbfamilien des grossen Bildes (Regel C-1a) — damit Station,
+   Ueberschrift und Punkt dieselbe Farbe tragen wie der Streifen im Bild. */
+/* Die Familienwerte setzt palette.js — sie sind je Fassung andere.
+   Was hier steht, ist wieder nur der Rückfall (helle Fassung). */
+:root { --fam-res: #595f68; --fam-q: #5469d6; --fam-k: #007369;
+        --fam-v: #007289; --fam-att: #4172be; --fam-ff: #614988;
+        --fam-res-blass: #babec6; --fam-q-blass: #b5b7ff;
+        --fam-k-blass: #8ec9c0; --fam-v-blass: #92c6d8;
+        --fam-att-blass: #a7bdf8; --fam-ff-blass: #cbb5e7;
+        --fam-res-rgb: 89 95 104; --fam-q-rgb: 84 105 214;
+        --fam-k-rgb: 0 115 105; --fam-v-rgb: 0 114 137;
+        --fam-att-rgb: 65 114 190; --fam-ff-rgb: 97 73 136; }
+
+/* Gruppenueberschrift einer Station traegt ihre Farbe. */
+.gruppe.station-gruppe { border-left: 3px solid var(--tf, var(--rand));
+                         padding-left: 10px; }
+
+/* ══ Eine Station ohne Kachel ══
+   Wird gezeigt, nicht verschwiegen: der Weg hat diese Stelle, der
+   Demonstrator vertieft sie nur noch nicht. Gestrichelt und nicht
+   anklickbar — sie sieht darum nie aus wie eine fertige Kachel.
+
+   EIGENE KLASSE, nicht `.kachel.luecke`: die Pruefer suchen `.kachel`, und
+   eine Attrappe, die so heisst, wird auch so behandelt (17 statt 14
+   Kacheln, Klick auf den Platzhalter, Meldung "KEINE Stellenwahl"). */
+.stationsluecke { border: 1px dashed var(--tf, var(--rand));
+                  border-radius: 12px; padding: 17px 18px; cursor: default;
+                  background: transparent; display: flex;
+                  flex-direction: column; gap: 7px; }
+.stationsluecke .nr { font-family: var(--font-display); font-size: 12px;
+                      font-weight: 700; color: var(--tf, var(--text-schwach)); }
+.stationsluecke h3 { margin: 0; font-family: var(--font-display);
+                     font-size: 16px; color: var(--tf, var(--text-muted)); }
+.stationsluecke p { margin: 0; font-size: 13px; color: var(--text-muted);
+                    line-height: 1.55; flex: 1; }
+.stationsluecke .fuss { font-size: 11.5px; color: var(--text-muted);
+                        font-style: italic; margin-top: 4px; }
+
+/* Ein Stationsname im grossen Bild ist ein Knopf — ausser die Station hat
+   noch keine Kachel. */
+.d3-bahn text.stationsname.fuehrt:hover { fill: var(--marke-text);
+                                          text-decoration: underline; }
+.d3-bahn text.stationsname.ohne-kachel { opacity: .55; }
+
+/* ══ Beispielsätze mit Längenangabe ══
+   Die Zahl hinter dem Beispiel ist die Stückzahl — sie entscheidet, ob die
+   Matrizen lesbar bleiben. Deshalb steht sie am Beispiel und nicht in einer
+   Fußnote. */
+.beispiele .chip .laenge { color: var(--marke-text); font-weight: 600;
+                           margin-left: 6px; font-size: 11px; }
+.beispiel-hinweis { margin-top: 9px; font-size: 12px; line-height: 1.55;
+                    color: var(--text-muted); }
+
+/* zweite Kopfzeile im Gitter: worauf sich die Zellen beziehen */
+.d3-gitter .kopf.zwei text { fill: var(--marke-text); }
+
+/* ══ Analogie: das Muster, das dem Modell vorgelegt wird ══
+   Es gehört sichtbar dazu — sonst bleibt unklar, worauf das Modell
+   eigentlich antwortet. */
+pre.muster { background: var(--bg); border: 1px solid var(--rand);
+             border-radius: 6px; padding: 10px 12px; margin: 10px 0 0;
+             font-family: var(--font-mono); font-size: 11.5px;
+             line-height: 1.6; color: var(--text-muted);
+             white-space: pre-wrap; overflow-x: auto; }
+
+/* ══ Rechenweg: die Mechanik Schritt für Schritt ══
+   Nummerierte Schritte mit kräftiger Ziffer links — der Blick soll dem Weg
+   folgen können, ohne dass man die Reihenfolge suchen muss. */
+.rechenschritt { display: flex; gap: 16px; align-items: flex-start;
+                 padding: 16px 0; border-top: 1px solid var(--rand); }
+.rechenschritt:first-of-type { border-top: none; }
+.rechenschritt .nr { flex: none; width: 34px; height: 34px; border-radius: 50%;
+                     background: var(--primary-deep); color: var(--auf-marke);
+                     font-family: var(--font-display); font-size: 17px;
+                     font-weight: 600; display: flex; align-items: center;
+                     justify-content: center; }
+.rechenschritt .inhalt { flex: 1; min-width: 0; }
+.rechenschritt h5 { margin: 4px 0 7px; font-family: var(--font-display);
+                    font-size: 16px; font-weight: 600; color: var(--text); }
+.rechenschritt .was { font-size: 14px; line-height: 1.65; color: var(--text); }
+.rechenschritt .was b { color: var(--marke-text); }
+
+table.tab.rechen { margin-top: 11px; width: 100%; }
+table.tab.rechen td, table.tab.rechen th { padding: 5px 9px; font-size: 12.5px; }
+table.tab.rechen td.mono { font-family: var(--font-mono); font-size: 11.5px;
+                           color: var(--text-muted); white-space: nowrap; }
+table.tab.rechen td.mono.klein { font-size: 10.5px; }
+table.tab.rechen tr.selbst { background: rgb(var(--marke-rgb) / .07); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Aufklappbare Erklärungen
+
+   Der Demonstrator wird zum Erklären benutzt — die ausführliche Fassung
+   muss da sein, darf aber nicht zwischen dem Betrachter und dem Bild
+   stehen. Zugeklappt ist sie eine Zeile, aufgeklappt vollständig.
+   ══════════════════════════════════════════════════════════════════════ */
+.aufklapp { margin: 10px 0; border: 1px solid var(--rand); border-radius: 10px;
+            background: linear-gradient(180deg,
+              rgb(var(--elev-rgb) / .55) 0%, rgb(var(--karte-rgb) / .55) 100%);
+            overflow: hidden; transition: border-color .18s; }
+.aufklapp:hover { border-color: var(--teal); }
+.aufklapp[open] { border-color: var(--primary-deep);
+                  box-shadow: 0 0 26px -14px var(--cyan); }
+.aufklapp > summary { cursor: pointer; list-style: none; padding: 10px 15px;
+                      display: flex; align-items: center; gap: 11px;
+                      font-size: 13.5px; color: var(--text-muted);
+                      user-select: none; }
+.aufklapp > summary::-webkit-details-marker { display: none; }
+.aufklapp > summary:hover { color: var(--text); }
+.aufklapp > summary .zeichen { flex: none; width: 21px; height: 21px;
+    border-radius: 50%; background: var(--primary-deep); color: var(--auf-marke);
+    font-size: 12px; font-weight: 700; display: flex;
+    align-items: center; justify-content: center; transition: transform .2s; }
+.aufklapp[open] > summary .zeichen { background: var(--cyan); color: var(--auf-cyan);
+    transform: rotate(180deg); }
+.aufklapp > summary .wort { flex: 1; }
+.aufklapp > summary::after { content: "aufklappen"; font-size: 11px;
+    color: var(--teal); font-family: var(--font-display);
+    text-transform: uppercase; letter-spacing: .07em; }
+.aufklapp[open] > summary::after { content: "zuklappen"; }
+.aufklapp-inhalt { padding: 2px 16px 15px 47px; font-size: 13.5px;
+                   line-height: 1.65; color: var(--text-muted); }
+.aufklapp-inhalt p { margin: 0 0 9px; }
+.aufklapp-inhalt p:last-child { margin-bottom: 0; }
+.aufklapp-inhalt b { color: var(--marke-text); }
+.aufklapp-inhalt ul.anleitung { margin: 0; padding-left: 19px; }
+.aufklapp.schmal > summary { padding: 8px 13px; font-size: 12.5px; }
+.aufklapp.schmal .aufklapp-inhalt { padding: 0 14px 12px 43px; font-size: 12.5px; }
+
+/* ══ Mehr Tiefe: Felder bekommen Verlauf und Rand-Akzent ══ */
+.feld { background: linear-gradient(165deg,
+          rgb(var(--elev-rgb) / .95) 0%, rgb(var(--karte-rgb) / .95) 100%) !important;
+        box-shadow: var(--schatten); position: relative; }
+.feld > h4 { position: relative; padding-left: 13px; }
+.feld > h4::before { content: ""; position: absolute; left: 0; top: 2px;
+        bottom: 2px; width: 3px; border-radius: 2px;
+        background: linear-gradient(180deg, var(--cyan), var(--magenta)); }
+
+/* Kacheln der Startseite: farbiger Akzent je Gruppe */
+.raster .kachel { position: relative; overflow: hidden; }
+.raster .kachel::after { content: ""; position: absolute; inset: 0 0 auto 0;
+        height: 2px; background: linear-gradient(90deg,
+          var(--cyan), var(--magenta) 60%, var(--wahl));
+        opacity: .5; transition: opacity .2s; }
+.raster .kachel:hover::after { opacity: 1; }
+
+/* Befund kräftiger */
+.befund { background: linear-gradient(135deg,
+            rgb(var(--gruen-rgb) / .13) 0%, rgb(var(--gruen-rgb) / .05) 100%) !important;
+          box-shadow: inset 0 0 32px -18px var(--gruen); }
+
+/* Rechenschritt-Ziffern farbig durchlaufend */
+.rechenschritt:nth-of-type(1) .nr { background: var(--primary-deep);
+      color: var(--auf-marke); }
+.rechenschritt:nth-of-type(2) .nr { background: var(--schritt-2); }
+.rechenschritt:nth-of-type(3) .nr { background: var(--schritt-3); }
+.rechenschritt:nth-of-type(4) .nr { background: var(--schritt-4); }
+.rechenschritt .nr { box-shadow: 0 0 18px -6px currentColor;
+      /* Die Ziffern stehen auf satten Flaechen — in BEIDEN Fassungen
+         dunkel. Ihre Schrift ist deshalb immer hell und darf nicht
+         --text erben. */
+      color: var(--auf-marke); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Diagramm-Rahmen: Aussage, Achsen, Legende
+
+   Ein Diagramm ohne Achsentitel und Legende zwingt zum Suchen im Fließtext
+   daneben — und niemand sucht. Deshalb steht die Aussage GROSS über dem
+   Bild und die Legende direkt darunter.
+   ══════════════════════════════════════════════════════════════════════ */
+.diagramm { margin: 14px 0 4px; }
+/* Der Bezug: worauf rechnet DIESES Bild gerade? Steht über jedem Diagramm,
+   damit auf einer langen Seite nie offen bleibt, ob unten noch derselbe
+   Satz gemeint ist wie oben im Eingabefeld. */
+.diagramm .bezug { font-family: var(--font-mono); font-size: 11.5px;
+      line-height: 1.5; color: var(--text-muted); margin-bottom: 7px;
+      padding: 5px 10px; border-radius: 7px; background: var(--bg-elev);
+      border: 1px solid var(--rand);
+      display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.diagramm .bezug:empty { display: none; }
+.diagramm .bezug .was { font-family: var(--font-display); font-size: 11px;
+      text-transform: uppercase; letter-spacing: .08em; color: var(--marke-text); }
+.diagramm .bezug .satz { color: var(--text); }
+.diagramm .bezug .stelle { color: var(--wahl); font-weight: 700;
+      background: rgb(var(--wahl-rgb) / .16); border-radius: 3px; padding: 0 3px; }
+.diagramm .bezug .rest { color: var(--text-muted); }
+.diagramm .bezug .warn { color: var(--magenta); }
+.diagramm .aussage { font-size: 16px; line-height: 1.55; color: var(--text);
+      padding: 12px 16px; margin-bottom: 12px; border-radius: 10px;
+      background: linear-gradient(135deg,
+        rgb(var(--marke-rgb) / .13) 0%, rgb(var(--magenta-rgb) / .09) 100%);
+      border-left: 4px solid var(--cyan); }
+.diagramm .aussage b { color: var(--wahl); font-weight: 700; }
+.diagramm .aussage .warn { color: var(--magenta); }
+.diagramm .aussage:empty { display: none; }
+.diagramm .bild { position: relative; }
+.diagramm-fuss { margin-top: 8px; }
+.diagramm-fuss .legende { display: flex; gap: 20px; flex-wrap: wrap;
+      font-size: 12.5px; color: var(--text-muted); align-items: center; }
+.diagramm-fuss .legende .marke { display: inline-block; width: 15px;
+      margin-right: 7px; vertical-align: 1px; }
+
+/* Achsentitel in den SVG-Diagrammen */
+/* Diese Liste war unvollstaendig: `.d3-fluss` und `.d3-kette` fehlten,
+   deshalb erbten ihre Achsentitel eine dunkle Farbe und waren gegen den
+   Grund nicht mehr zu lesen (gemessen 1,23:1 am Netz-Diagramm). Eine
+   Aufzaehlung von Klassen ist genau so lange richtig, wie niemand eine
+   neue Anschauung baut — deshalb faengt der letzte Selektor jede
+   kuenftige mit ab. */
+.d3-kurve .achsentitel, .d3-saeulen .achsentitel, .d3-gitter .achsentitel,
+.d3-feld .achsentitel, .d3-posfeld .achsentitel, .d3-balken .achsentitel,
+.d3-fluss .achsentitel, .d3-kette .achsentitel,
+.d3-landkarte text.achsentitel, .linien-svg text.achsentitel,
+svg text.achsentitel {
+      font-family: var(--font-display) !important; font-size: 12.5px !important;
+      fill: var(--marke-text) !important; letter-spacing: .04em; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Die gewählte Stelle im Satz — überall dieselbe Markierung
+
+   Ein Klick auf ein Stück oben MUSS im Bild darunter ankommen. Damit man
+   ihn wiederfindet, sieht die Markierung in JEDEM Diagramm gleich aus:
+   gelber Rahmen (im SVG gezeichnet) und, wo es eine Zeile gibt, eine
+   gelbe Unterlegung.
+   ══════════════════════════════════════════════════════════════════════ */
+/* Der gewählte Balken FÄRBT SICH — kein Kasten um ihn herum. */
+.d3-balken .z.markiert text.wort { fill: var(--wahl) !important;
+      font-weight: 700; }
+.d3-feld text.gewaehlt, .d3-posfeld text.gewaehlt,
+.d3-gitter text.gewaehlt { fill: var(--wahl) !important; font-weight: 700; }
+/* Auch hier färbt sich der Inhalt, statt einen Kasten zu bekommen. */
+.tab tr.markiert td { color: var(--wahl); }
+.tab tr.markiert td:first-child { box-shadow: inset 3px 0 0 var(--wahl); }
+/* Die Stückreihe ist ein Bedienelement — das muss man ihr ansehen. */
+.tokenreihe.stellenreihe .tok { cursor: pointer; }
+.tokenreihe.stellenreihe .tok:hover { border-color: var(--cyan); }
+
+/* Farbleiste als Legende für alle Hitzefelder */
+.farbleiste { margin: 9px 0 2px; max-width: 420px; }
+.farbleiste .was { margin-top: 3px; font-size: 11.5px;
+      color: var(--text-muted); }
+.farbleiste .leiste { height: 11px; border-radius: 6px;
+      border: 1px solid var(--rand); }
+.farbleiste .zeile { display: flex; justify-content: space-between;
+      margin-top: 4px; font-size: 11.5px; color: var(--text-muted); }
+.farbleiste .zeile .mitte { color: var(--text-muted); }
+
+/* ══ Stellwerk: die Parameter, die man verstellen kann ══ */
+.stellwerk { background: rgb(var(--marke-rgb) / .06); border: 1px solid var(--rand);
+      border-left: 3px solid var(--wahl); border-radius: 0 10px 10px 0;
+      padding: 13px 16px; margin: 12px 0; }
+.stellwerk-titel { font-family: var(--font-display); font-size: 11.5px;
+      text-transform: uppercase; letter-spacing: .09em; color: var(--wahl);
+      margin-bottom: 9px; }
+.stellzeile { display: flex; align-items: center; gap: 11px; margin-bottom: 8px; }
+.stellzeile .was { flex: none; width: 132px; font-size: 12.5px;
+      color: var(--text-muted); }
+.stellzeile input { flex: none; width: 220px; }
+.stellzeile input.breit { flex: 1; width: auto; }
+.d3-kurve .xmarken text { font-family: var(--font-mono); font-size: 10.5px;
+      fill: var(--text-muted); }
+.stellhinweis { font-size: 12px; color: var(--text-muted); margin-bottom: 9px;
+                line-height: 1.5; }
+.stellzeile .festwert { font-family: var(--font-mono); font-size: 12.5px;
+                        color: var(--marke-text); padding: 5px 0; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Die Herleitung: drei Rechenstufen nebeneinander
+
+   Sie steht ZUGEKLAPPT über dem Ergebnis. Wer wissen will, wie die Matrix
+   entsteht, klappt sie auf; wer sie kennt, sieht sie nicht und muss auch
+   nichts wegscrollen.
+
+   Die drei Bilder liegen nebeneinander, solange Platz ist, und brechen
+   sonst um. Sie behalten jedes für sich Bezug, Aussage, Achsen und
+   Farbleiste — drei Bilder, die nur zusammen etwas sagen, wären drei
+   Bilder, die einzeln nichts sagen.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.aufklapp.herleitung { margin: 4px 0 14px; }
+.aufklapp.herleitung > summary::after { content: "Herleitung zeigen"; }
+.aufklapp.herleitung[open] > summary::after { content: "Herleitung schließen"; }
+.aufklapp.herleitung > .aufklapp-inhalt { padding: 4px 16px 16px 16px; }
+
+.stufenkette { display: flex; flex-wrap: wrap; gap: 20px;
+               align-items: flex-start; margin-top: 6px; }
+.stufe { flex: 1 1 320px; min-width: 300px; }
+
+.stufenkopf { display: flex; align-items: center; gap: 11px;
+              padding-bottom: 6px; border-bottom: 1px solid var(--rand); }
+.stufenkopf .nr { flex: none; width: 27px; height: 27px; border-radius: 50%;
+                  background: var(--primary-deep); color: var(--auf-marke);
+                  font-family: var(--font-display); font-size: 15px;
+                  font-weight: 600; display: flex; align-items: center;
+                  justify-content: center; box-shadow: 0 0 16px -6px currentColor; }
+.stufenkopf .wort { min-width: 0; }
+.stufenkopf .name { font-family: var(--font-display); font-size: 15px;
+                    font-weight: 600; color: var(--text); line-height: 1.25; }
+.stufenkopf .formel { font-family: var(--font-mono); font-size: 11.5px;
+                      color: var(--marke-text); }
+
+/* Die Stufen sind eine Folge, keine drei gleichrangigen Bilder — die
+   Nummer wird deshalb heller, je weiter die Rechnung fortgeschritten ist.
+   Kalt bleibt sie: Gelb gehört der Auswahl (Regel C-1). */
+/* Jede Ziffer steht auf einem ANDEREN Grund und braucht deshalb ihre
+   eigene Schriftfarbe. `!important`, weil die Weiss-Regel weiter unten
+   sonst alle drei ueberschreibt. */
+.stufe:nth-of-type(1) .stufenkopf .nr { background: var(--fam-k);
+      color: var(--auf-fam) !important; }
+.stufe:nth-of-type(2) .stufenkopf .nr { background: var(--primary-deep);
+      color: var(--auf-marke) !important; }
+/* Regel C-2: auf dem Marken-Cyan steht NIE weisse Schrift. */
+.stufe:nth-of-type(3) .stufenkopf .nr { background: var(--cyan);
+      color: var(--auf-cyan) !important; }
+
+/* Bewegung, die etwas erklärt (Regel A-9): die drei Stufen erscheinen
+   NACHEINANDER, in der Reihenfolge, in der gerechnet wird. Ein
+   gleichzeitiges Aufblitzen aller drei zeigte drei Bilder; so zeigt es
+   eine Kette. Eine CSS-Animation statt einer Transition, weil der Inhalt
+   eines zugeklappten <details> gar nicht erst gerendert wird und eine
+   Transition daher übersprungen würde. */
+@keyframes herleitungEin {
+  from { opacity: 0; transform: translateY(-9px); }
+  to   { opacity: 1; transform: none; }
+}
+.aufklapp.herleitung[open] > .aufklapp-inhalt {
+  animation: herleitungEin .42s cubic-bezier(.4, 0, .2, 1) both; }
+.aufklapp.herleitung[open] .stufe {
+  animation: herleitungEin .45s cubic-bezier(.4, 0, .2, 1) both; }
+.aufklapp.herleitung[open] .stufe:nth-of-type(1) { animation-delay: .10s; }
+.aufklapp.herleitung[open] .stufe:nth-of-type(2) { animation-delay: .22s; }
+.aufklapp.herleitung[open] .stufe:nth-of-type(3) { animation-delay: .34s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .aufklapp.herleitung[open] > .aufklapp-inhalt,
+  .aufklapp.herleitung[open] .stufe { animation: none; }
+}
+
+/* Der Bezug in einer SCHMALEN Spalte (Herleitung): die Satzfolge ist ein
+   Flex-Kind und schrumpft ohne min-width:0 nicht unter ihre Textbreite —
+   sie lief seitlich aus dem Kasten heraus. Gilt für jedes Diagramm in
+   einer schmalen Spalte, nicht nur für die Herleitung. */
+.diagramm .bezug .satzfolge { min-width: 0; overflow-wrap: anywhere; }
+
+/* In der Herleitung stehen drei Diagramme nebeneinander; Bezug und Aussage
+   werden dort kompakter gesetzt, damit die Bilder nicht nach unten
+   wegrutschen. Auf gleiche Höhe gebracht werden sie in JS
+   (hoehenAngleichen) — CSS kann das über getrennte Container nicht. */
+.stufe .diagramm .aussage { font-size: 14px; padding: 9px 12px;
+      margin-bottom: 9px; }
+.stufe .diagramm .bezug { font-size: 10.5px; padding: 4px 8px; }
+.stufe .diagramm { margin-top: 10px; }
+.stufe .farbleiste { margin-top: 7px; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Verwandlungstafel — eine Zeile je Stück, eine Spalte je Rechenstufe
+
+   Der Zweck ist das Lesen EINER Zeile quer: was wird aus diesem Stück?
+   Deshalb bekommt die Zeile beim Überfahren eine durchgehende Unterlage,
+   und die Spalten haben feste, gleiche Breiten — sonst verschieben sich
+   die Balken gegeneinander und man vergleicht Längen, die nicht zueinander
+   gehören.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.tafel-aussen { margin-top: 4px; }
+.achsenzeile.tafel-ytitel { font-family: var(--font-display); font-size: 11.5px;
+      text-transform: uppercase; letter-spacing: .07em;
+      color: var(--text-muted); margin-bottom: 6px; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   DIE MASSE SIND DIE DER VORLAGE (ausgemessen an _vorbild/bilder/fig-8.png
+   am 14.08.2026, nicht geschätzt).
+
+   Vorlage:  Tafel 459 px breit · Namen 60 px · Zahlenspalten je 55 px ·
+             Abstand Mitte zu Mitte 85–92 px · Zeilenhöhe 25 px
+   vorher:   Tafel 1148 px · Namen 170 px · Spalten je 231 px ·
+             Mitte zu Mitte 241 px · Zeilenhöhe 21 px
+
+   Das war der Fehler: über die volle Seitenbreite gezogen liegen zwischen
+   zwei Zahlen DERSELBEN Zeile 241 px Leere. Man kann die Zeile dann nicht
+   mehr quer lesen — und quer lesen ist der einzige Zweck dieser Tafel.
+   Hier etwas großzügiger als das Vorbild (die Schrift ist größer), aber in
+   denselben Verhältnissen.
+   ══════════════════════════════════════════════════════════════════════ */
+/* Mittig wie in der Vorlage: dort steht die Tafel als Figur in der Mitte
+   ihres Bildes (x 131..589 von 714 px). */
+.tafel.verwandlungstafel { width: auto; max-width: 640px; margin: 0 auto; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   KNAPP IST DIE VORAUSSTELLUNG (wie `isSoftmaxExpanded = false` im Vorbild)
+
+   Zu sehen ist dann nur: Wort, Balken, Prozent. Die drei Zahlenspalten
+   erscheinen erst auf Klick. Andersherum standen zwölf Zeilen mal vier
+   Zahlenspalten da — 48 Zahlen, bevor irgendetwas gesagt war.
+   ══════════════════════════════════════════════════════════════════════ */
+.verwandlungstafel.knapp { max-width: 460px; }
+.verwandlungstafel.knapp .tafel-kopf,
+.verwandlungstafel.knapp .tafel-zeile {
+      grid-template-columns: 110px 300px; gap: 20px; }
+.verwandlungstafel.knapp .tafel-spalte.sp0,
+.verwandlungstafel.knapp .tafel-spalte.sp1,
+.verwandlungstafel.knapp .tafel-spalte.sp2,
+.verwandlungstafel.knapp .tafel-zelle.sp0,
+.verwandlungstafel.knapp .tafel-zelle.sp1,
+.verwandlungstafel.knapp .tafel-zelle.sp2 { display: none; }
+.verwandlungstafel.knapp .tafel-zelle .balken { max-width: 232px; }
+.verwandlungstafel.knapp .tafel-zelle { justify-content: flex-start; }
+
+/* Der Aufklapper sitzt im Kopf über den Namen — dort, wo im Vorbild das
+   „Probabilities ⊕“ steht. */
+.tafel-kopf .tafel-name { display: flex; flex-direction: column;
+      align-items: flex-end; gap: 3px; }
+.tafel-lupe { background: transparent; border: 1px solid var(--rand);
+      border-radius: 5px; color: var(--diagrammtext); cursor: pointer;
+      font-family: var(--font-display); font-size: 10px;
+      letter-spacing: .04em; padding: 1px 6px; line-height: 1.6;
+      display: inline-flex; align-items: center; gap: 4px;
+      text-transform: none; }
+.tafel-lupe:hover { background: rgb(var(--marke-rgb) / .16);
+      border-color: var(--cyan); }
+.tafel-lupe .zeichen { font-size: 12px; }
+.tafel-kopf, .tafel-zeile { display: grid;
+      grid-template-columns: 92px 62px 62px 62px 168px; gap: 28px;
+      align-items: center; }
+.tafel-kopf { padding: 0 0 7px; border-bottom: 1px solid var(--rand);
+      margin-bottom: 4px; }
+.tafel-kopf .tafel-spalte .titel { font-family: var(--font-display);
+      font-size: 12.5px; font-weight: 600; color: var(--text); }
+.tafel-kopf .tafel-spalte .unter { font-family: var(--font-mono);
+      font-size: 10.5px; color: var(--text-muted); }
+.tafel-kopf .tafel-name { font-family: var(--font-display); font-size: 11.5px;
+      text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); }
+
+/* Zeilenhöhe 25 px wie in der Vorlage (dort 225 px für 9 Zeilen). */
+.tafel-zeile { padding: 4px 0; border-radius: 4px; min-height: 25px;
+      transition: background .15s; }
+.tafel-zeile:hover { background: rgb(var(--marke-rgb) / .07); }
+/* RECHTSBÜNDIG wie in der Vorlage: die Namen enden dort, wo die Zahlen
+   beginnen — das Auge folgt einer Kante statt zwei. */
+.tafel-zeile .tafel-name { font-family: var(--font-mono); font-size: 12.5px;
+      color: var(--text); white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis; text-align: right; }
+
+/* Ausgeschnitten heißt: bleibt stehen, wird blass. Wer die Zeile entfernt,
+   zeigt das Ergebnis des Schnitts statt den Schnitt. */
+.tafel-zeile.raus { opacity: .45; }
+.tafel-zeile.raus .tafel-name { text-decoration: line-through;
+      text-decoration-color: rgb(var(--muted-rgb) / .6); }
+
+/* Gelb heißt hier wie überall „das ist die Auswahl“ — hier: das Stück, auf
+   das das Modell setzt. Es färbt den NAMEN, nicht den Balken; der Balken
+   trägt den Messwert (Regel C-1). */
+.tafel-zeile.gewaehlt .tafel-name { color: var(--wahl); font-weight: 700; }
+
+.tafel-zelle { display: flex; align-items: center; gap: 9px; min-width: 0;
+      justify-content: center; }
+/* DER BALKEN IST EINE LINIE, KEIN BLOCK — wie in der Vorlage. Dort trägt er
+   nur die LÄNGE; die Höhe eines 12-px-Klotzes sagt nichts und drängt die
+   Zahl an den Rand. */
+.tafel-zelle .balken { height: 4px; border-radius: 2px; flex: none;
+      min-width: 0; max-width: 108px; }
+.tafel-zeile.gewaehlt .tafel-zelle .balken { height: 6px; }
+.tafel-zelle .zahl { font-family: var(--font-mono); font-size: 12px;
+      color: var(--text-muted); white-space: nowrap; }
+.tafel-zeile.gewaehlt .tafel-zelle .zahl { color: var(--text); }
+
+.stellwerk { gap: 22px; margin: 10px 0 4px; flex-wrap: wrap; }
+
+@media (max-width: 760px) {
+  .tafel-kopf, .tafel-zeile { grid-template-columns: 72px 54px 54px 54px 120px;
+      gap: 12px; }
+  .tafel-zelle .zahl { font-size: 11px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Attention-Kette — die drei Rechenstufen als EIN Bild
+
+   Gebaut nach dem Vorbild (Transformer Explainer, Abbildung 3). Klein und
+   luftig: das Vorbild braucht für alle drei Stufen 715 × 330 px. Die
+   frühere Fassung mit drei getrennten Diagrammen brauchte 1114 × 797 und
+   zeigte dieselbe Wortliste dreimal.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.d3-kette { display: block; overflow: visible; margin: 6px 0 2px; }
+.d3-kette .beschriftung text { font-family: var(--font-mono);
+      font-size: 11px; fill: var(--text-muted); }
+.d3-kette .beschriftung text.gewaehlt { fill: var(--wahl); font-weight: 700; }
+.d3-kette text.stufenname { font-family: var(--font-display); font-size: 12.5px;
+      font-weight: 600; fill: var(--text); }
+.d3-kette text.stufenformel { font-family: var(--font-mono); font-size: 10.5px;
+      fill: var(--marke-text); }
+.d3-kette text.grenze { font-family: var(--font-mono); font-size: 10px;
+      fill: var(--text-muted); }
+.d3-kette text.pfeil { font-size: 19px; fill: var(--text-muted); }
+
+/* Die beiden Achsentitel tragen die Bauteilfarbe: links fragt Query,
+   oben wird Key gefragt. So ist am Bild zu sehen, woraus die Matrix
+   entsteht — im Vorbild leisten das die farbigen Bänder von links. */
+.d3-kette .achsentitel.bauteil.query { fill: var(--fam-q) !important; }
+.d3-kette .achsentitel.bauteil.key { fill: var(--fam-k) !important; }
+
+/* Verwandlungstafel: die ersten Spalten tragen reine Zahlen (Vorbild),
+   nur die letzte einen Balken. Zahlen stehen dann linksbündig statt
+   hinter einem unsichtbaren Balken zu kleben. */
+.tafel-zelle.nurzahl { justify-content: center; }
+.tafel-zelle.nurzahl .zahl { font-size: 12.5px; color: var(--text); }
+.tafel-zelle .zahl.behalten { color: var(--text); }
+.tafel-zelle .zahl.gesperrt { color: var(--text-muted); font-weight: 700; }
+.tafel-zeile.raus { opacity: .62; }
+
+/* Die Kopfzeile der Vorlage ist ZURÜCKGENOMMEN: kleine graue Wörter, keine
+   Unterzeile mit Skalengrenzen im Fettdruck. Die Grenzen bleiben, aber
+   leise — sie sind Beleg, nicht Überschrift. */
+.tafel-kopf .tafel-spalte { text-align: center; }
+.tafel-kopf .tafel-spalte .titel { justify-content: center; font-size: 11.5px;
+      font-weight: 500; }
+.tafel-kopf .tafel-spalte .unter { font-size: 9.5px; opacity: .8;
+      line-height: 1.3; }
+.tafel-kopf .tafel-name { text-align: right; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Der Schnitt als FLÄCHE, nicht als Schriftfarbe (Vorbild, Abbildung 8)
+
+   Dort sind die behaltenen Zeilen in der Schnitt-Spalte blass hinterlegt.
+   Das ist der Unterschied zwischen „ich muss jede Zahl einzeln lesen“ und
+   „ich sehe auf einen Blick, wo geschnitten wurde“ — eine Fläche liest man
+   als Block, eine Schriftfarbe nicht.
+   ══════════════════════════════════════════════════════════════════════ */
+.tafel-zelle.behalten { background: rgb(var(--marke-rgb) / .13);
+      border-radius: 5px; padding: 2px 7px; margin: -2px 0; }
+
+/* Die Zeile, in der der Schnitt fällt: ein Strich darunter. Ohne ihn muss
+   man Zeilen zählen, um zu sehen, WO die Grenze liegt — bei top-p wechselt
+   sie mit jedem Zug am Regler. */
+.tafel-zeile.schnittzeile { border-bottom: 2px solid var(--cyan);
+      padding-bottom: 5px; margin-bottom: 3px; }
+
+/* Der Knopf im Spaltenkopf — das Auge des Vorbilds an „Logits“. */
+.tafel-kopf .tafel-spalte .titel { display: flex; align-items: center;
+      gap: 7px; }
+/* Weiss, nicht var(--text): die Weiss-Regel am Dateiende fasst nur text,
+   div und span — ein <button> faellt durch und behielte sonst eine
+   Farbe, die niemand geprueft hat. */
+.spaltenknopf { background: transparent; border: 1px solid var(--rand);
+      border-radius: 5px; color: var(--diagrammtext); cursor: pointer;
+      font-family: var(--font-display); font-size: 11px;
+      padding: 1px 6px; line-height: 1.5; }
+.spaltenknopf:hover { background: rgb(var(--marke-rgb) / .14);
+      border-color: var(--cyan); }
+.spaltenknopf.an { background: rgb(var(--marke-rgb) / .28);
+      border-color: var(--cyan); }
+.spaltenknopf .zeichen { font-size: 12px; }
+
+/* Die Bedienzeile ÜBER der Tafel: sie ist die Ursache dessen, was darunter
+   steht, und gehört deshalb darüber — nicht darunter und nicht daneben. */
+.stellwerk.oben { display: flex; align-items: center; gap: 26px;
+      flex-wrap: wrap; margin: 12px 0 10px; padding: 10px 14px; }
+.stellwerk.oben .regler { margin: 0; }
+.stellwerk.oben .regler .name { width: auto; min-width: 80px; }
+.stellwerk.oben .regler input[type=range] { max-width: 170px; }
+.verfahrenwahl { display: flex; align-items: center; gap: 7px; }
+.verfahrenwahl .beschriftung { margin: 0; }
+
+.tafelblock .auge-ziel { margin-top: 14px; }
+
+/* ── Die Bahn: der ganze Weg in einem Bild ─────────────────────────── */
+.d3-bahn { display: block; overflow: visible; margin: 4px 0 2px;
+      width: 100%; height: auto; }
+.d3-bahn text.stationsname { font-family: var(--font-display); font-size: 11px;
+      text-transform: uppercase; letter-spacing: .07em; }
+.d3-bahn text.wort { font-family: var(--font-mono); font-size: 11.5px; }
+.d3-bahn text.wort.gewaehlt { font-weight: 700; }
+.d3-bahn text.kwort { font-family: var(--font-mono); font-size: 11.5px; }
+.d3-bahn .kand.erste text.kwort { font-weight: 700; }
+.d3-bahn .kand rect.kbalken { fill: rgb(var(--fam-v-rgb) / .75); }
+.d3-bahn .kand.erste rect.kbalken { fill: var(--wahl); }
+.d3-bahn .kand.markiert rect.kbalken { fill: var(--wahl); }
+.d3-bahn rect.zelle { shape-rendering: crispEdges; }
+
+/* Der Kartenstapel: dieser Block steht nicht einmal, sondern 28-mal da. */
+.d3-bahn rect.stapel { fill: var(--bg-elev); stroke: var(--rand);
+      stroke-width: 1; }
+.d3-bahn text.stapeltext { font-family: var(--font-mono); font-size: 9.5px;
+      fill: var(--text-muted); }
+
+/* Das abgesetzte Feld der Aufmerksamkeit — wie im Vorbild vom Rest getrennt. */
+.d3-bahn rect.attfeld { fill: var(--feld); stroke: rgb(var(--fam-att-rgb) / .55);
+      stroke-width: 1; }
+
+/* Der Residualstrom laeuft am Bauteil vorbei. */
+.d3-bahn path.residual { fill: none; stroke: var(--fam-res); stroke-width: 12;
+      stroke-linecap: round; opacity: .30; }
+.d3-bahn text.residuallabel { font-size: 11px; fill: var(--fam-res);
+      font-style: italic; }
+
+/* Q, K und V am Wort; die drei Faecher im Feld. */
+.d3-bahn text.qkvname { font-family: var(--font-mono); font-size: 8px; }
+.d3-bahn text.faechername { font-family: var(--font-display); font-size: 11px;
+      text-transform: uppercase; letter-spacing: .07em; }
+.d3-bahn line.faecherlinie { stroke-width: 2; }
+.d3-bahn text.faecherwort { font-family: var(--font-mono); font-size: 8.5px;
+      fill: var(--text-muted); }
+
+/* Das Punktraster des gewaehlten Kopfes. */
+.d3-bahn circle.mzelle { }
+.d3-bahn text.rasterlabel { font-family: var(--font-mono); font-size: 9.5px;
+      fill: var(--text-muted); }
+
+/* Die Klammer unter dem Feedforward zeigt die Aufweitung. */
+.d3-bahn path.ffklammer { fill: none; stroke: rgb(var(--fam-ff-rgb) / .7);
+      stroke-width: 1.3; }
+.d3-bahn text.ffklammertext { font-family: var(--font-mono); font-size: 9.5px;
+      fill: var(--fam-ff); }
+
+/* ── Feedforward: der Filter mit 6.144 Schaltern ───────────────────── */
+.d3-aufweitung { display: block; overflow: visible; margin: 4px 0 2px;
+      width: 100%; height: auto; }
+.d3-aufweitung text.stationsname { font-family: var(--font-display);
+      font-size: 11px; text-transform: uppercase; letter-spacing: .07em;
+      fill: var(--text-muted); }
+.d3-aufweitung text.wort { font-family: var(--font-mono); font-size: 11.5px;
+      fill: var(--text); }
+.d3-aufweitung text.wort.gewaehlt { font-weight: 700; fill: var(--wahl); }
+.d3-aufweitung rect.zelle { shape-rendering: crispEdges; }
+.d3-aufweitung text.malzeichen { font-family: var(--font-mono);
+      font-size: 24px; fill: var(--magenta); }
+.d3-aufweitung path.gabel { fill: none; stroke: var(--fam-res); stroke-width: 9;
+      stroke-linecap: round; opacity: .28; }
+.d3-aufweitung text.gabeltext { font-size: 11px; fill: var(--fam-res);
+      font-style: italic; }
+
+.d3-dreibalken { display: block; overflow: visible; margin: 4px 0 2px;
+      width: 100%; height: auto; }
+.d3-dreibalken text.spaltentitel { font-family: var(--font-display);
+      font-size: 11.5px; text-transform: uppercase; letter-spacing: .07em; }
+.d3-dreibalken text.zname { font-family: var(--font-mono); font-size: 11.5px;
+      fill: var(--text); }
+.d3-dreibalken .zeile.gewaehlt text.zname { fill: var(--wahl);
+      font-weight: 700; }
+.d3-dreibalken text.bwert { font-family: var(--font-mono); font-size: 10px;
+      fill: var(--text-muted); }
+.d3-dreibalken .zeile.gewaehlt text.bwert { fill: var(--wahl); }
+.d3-dreibalken .zeile:hover text.zname { fill: var(--marke-text); }
+.d3-dreibalken line.nulllinie { stroke: var(--text-muted); stroke-width: 1;
+      opacity: .45; }
+
+/* Beitragsbalken — Größen mit Vorzeichen von einer Nulllinie aus */
+.d3-beitraege { display: block; overflow: visible; margin: 4px 0 2px; }
+.d3-beitraege text.wort { font-family: var(--font-mono); font-size: 11px; }
+.d3-beitraege text.wert { font-family: var(--font-mono); font-size: 11px; }
+.d3-beitraege line.nulllinie { stroke: var(--text-muted); stroke-width: 1;
+      stroke-dasharray: 3 3; }
+.d3-beitraege text.grenze { font-family: var(--font-mono); font-size: 10px; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   DIE NEUE KACHELFORM (14.08.2026)
+
+   Auf der Seite steht: Überschrift, Bedienleiste, Darstellung, eine Zeile
+   Legende, eine zugeklappte Erklärzelle. Sonst nichts.
+
+   Gemessen vorher: im Mittel 539 px Text, bevor das erste Bild anfing, und
+   3.519 sichtbare Zeichen je Kachel — rund anderthalb DIN-A4-Seiten. Das
+   Vorbild zeigt auf dem ersten Bildschirm KEINEN Fließtext.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Die Bedienleiste: alles Verstellbare an einem Ort ─────────────── */
+.bedienleiste { background: rgb(var(--marke-rgb) / .05);
+      border: 1px solid var(--rand); border-radius: 10px;
+      padding: 10px 14px; margin: 8px 0 14px; }
+.bedienleiste .satzfeld { margin: 0 0 8px; padding: 0; border: none;
+      background: none; }
+.leiste-zeile { display: flex; align-items: center; gap: 14px;
+      flex-wrap: wrap; padding: 5px 0; }
+.leiste-zeile + .leiste-zeile { border-top: 1px solid rgb(var(--rand-rgb) / .6); }
+.leiste-name { font-family: var(--font-display); font-size: 11px;
+      text-transform: uppercase; letter-spacing: .07em;
+      color: var(--text-muted); width: 74px; flex: none; }
+.leiste-feld { display: flex; align-items: center; gap: 8px;
+      flex-wrap: wrap; flex: 1; min-width: 0; }
+.leiste-zeile.stellwerk { gap: 22px; }
+.leiste-zeile.stellwerk .regler { margin: 0; }
+.leiste-zeile.stellwerk .regler .name { width: auto; min-width: 74px; }
+.leiste-zeile.stellwerk .regler input[type=range] { max-width: 150px; }
+
+/* ── Bezugszeile und Rahmen zurückgenommen (Entscheidung 14.08.2026) ──
+   Die Vorlage hat weder das eine noch das andere. Die Bezugszeile bleibt —
+   sie ist der Beleg, dass das Bild aktuell ist —, aber als leise Zeile ohne
+   Kasten; und die Darstellung steht frei statt in einer Karte. */
+.diagramm .bezug { background: none !important; border: none !important;
+      padding: 0 0 5px !important; font-size: 10.5px !important;
+      opacity: .78; gap: 3px 12px; }
+.diagramm .bezug .stelle { margin-left: 4px; }
+
+.feld { background: none !important; border: none !important;
+      box-shadow: none !important; padding: 4px 0 0 !important;
+      margin-top: 26px; }
+.feld > h4 { padding-left: 0 !important; font-size: 14px;
+      color: var(--text-muted); font-weight: 600;
+      text-transform: uppercase; letter-spacing: .06em; }
+.feld > h4::before { display: none !important; }
+
+/* ── Die Kennzahlenzeile: was früher ein Satz war ──────────────────── */
+.diagramm .aussage { display: flex; flex-wrap: wrap; align-items: baseline;
+      gap: 4px 10px; background: none; border: none;
+      border-left: 3px solid var(--cyan); border-radius: 0;
+      padding: 4px 0 4px 10px; margin: 0 0 8px; font-size: 12.5px; }
+.kz { display: inline-flex; align-items: baseline; gap: 5px; }
+.kz-name { font-family: var(--font-display); font-size: 10.5px;
+      text-transform: uppercase; letter-spacing: .06em; opacity: .72; }
+.kz-wert { font-family: var(--font-mono); font-size: 12.5px; }
+.kz.stark .kz-wert { font-weight: 700; }
+.kz-punkt { opacity: .4; }
+
+/* ── Der Ansichts-Schalter AM Bild (nicht in der Leiste) ───────────── */
+.bild-schalter { display: flex; gap: 7px; margin: 2px 0 8px; }
+
+/* ── Die eine Erklärzelle, ganz unten ──────────────────────────────── */
+.erklaerzelle { margin: 22px 0 8px; border: 1px solid var(--rand);
+      border-radius: 10px; background: rgb(var(--karte-rgb) / .6); }
+.erklaerzelle > summary { display: flex; align-items: center; gap: 9px;
+      cursor: pointer; padding: 10px 14px; list-style: none;
+      font-family: var(--font-display); font-size: 13px; }
+.erklaerzelle > summary::-webkit-details-marker { display: none; }
+.erklaerzelle > summary::after { content: "AUFKLAPPEN"; margin-left: auto;
+      font-size: 10.5px; letter-spacing: .08em; color: var(--marke-text); }
+.erklaerzelle[open] > summary::after { content: "ZUKLAPPEN"; }
+.erklaerzelle > summary .zeichen { display: inline-flex;
+      align-items: center; justify-content: center;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--blau); color: var(--auf-marke); font-size: 11px; flex: none; }
+.erklaerzelle-inhalt { padding: 2px 16px 16px; }
+.erklaer-abschnitt { padding: 12px 0; }
+.erklaer-abschnitt + .erklaer-abschnitt { border-top: 1px solid var(--rand); }
+.erklaer-abschnitt h5 { margin: 0 0 7px; font-family: var(--font-display);
+      font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
+      color: var(--marke-text); }
+.erklaer-abschnitt p, .erklaer-abschnitt li { font-size: 13.5px;
+      line-height: 1.55; }
+.erklaer-abschnitt .befund { margin: 8px 0; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   ALLE SCHRIFT IN DIAGRAMMEN IST WEISS.
+
+   Anweisung des Anwenders, 13.08.2026: "vorher machst du die schriftfarbe
+   in allen diagrammen mit schwarzem hintergrund auf weiss".
+
+   Diese Regel steht mit Absicht ganz am Ende der Datei und mit
+   !important: sie schlaegt JEDE Farbangabe darueber. Vorher wurde die
+   Schriftfarbe an rund zwanzig Stellen einzeln gesetzt — grau, teal,
+   cyan, dunkelblau, und an vier Stellen so dunkel, dass sie gegen den
+   Grund verschwand. Eine Aufzaehlung von Klassen ist immer nur so
+   vollstaendig wie die Erinnerung dessen, der sie pflegt.
+
+   AUSGENOMMEN ist nichts. Wo eine Hervorhebung noetig ist, traegt sie ein
+   RAHMEN oder eine FLAECHE, nicht die Schriftfarbe.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.diagramm text, .diagramm tspan,
+.diagramm .zahl, .diagramm .wert, .diagramm div, .diagramm span,
+svg.d3-feld text, svg.d3-feld tspan,
+svg.d3-balken text, svg.d3-balken tspan,
+svg.d3-saeulen text, svg.d3-saeulen tspan,
+svg.d3-kurve text, svg.d3-kurve tspan,
+svg.d3-gitter text, svg.d3-gitter tspan,
+svg.d3-posfeld text, svg.d3-posfeld tspan,
+svg.d3-landkarte text, svg.d3-landkarte tspan,
+svg.d3-klein text, svg.d3-fluss text, svg.d3-fluss tspan,
+svg.d3-kette text, svg.d3-kette tspan,
+svg.d3-beitraege text, svg.d3-beitraege tspan,
+svg.d3-bahn text, svg.d3-bahn tspan,
+svg.linien-svg text, svg.linien-svg tspan,
+svg.vert-svg text, svg.vert-svg tspan,
+svg.d3-vorhersagenetz text, svg.d3-vorhersagenetz tspan,
+.tafel .zahl, .tafel .tafel-name, .tafel .titel, .tafel .unter,
+.tafel-kopf .tafel-name, .achsenzeile,
+.dimfeld-namen div, .dimfeld-xtitel, .dimfeld-xtitel .titel,
+.dimfeld-ytitel, .dimfeld-markentext,
+.farbleiste .zeile span, .farbleiste .was,
+.diagramm .legende span, .diagramm .bezug, .diagramm .bezug span,
+.diagramm .aussage, .diagramm .aussage span, .diagramm .aussage b {
+      fill: var(--diagrammtext) !important;
+      color: var(--diagrammtext) !important;
+}
+
+/* Der Bezug und die Legende bleiben etwas kleiner, aber ebenso weiss —
+   "leise" wird ueber die Schriftgroesse gesagt, nicht ueber eine Farbe,
+   die man nicht mehr lesen kann. */
+.diagramm .bezug { font-size: 11.5px; }
+.diagramm .legende span { font-size: 12px; }
+
+/* Nachtrag zur Weiss-Regel: auch Hervorhebungen INNERHALB von Legende,
+   Aussage und Bezug sind weiss — ein <b> in Cyan ist wieder eine zweite
+   Schriftfarbe. Und die ausgeschnittenen Zeilen der Tafel werden nicht
+   mehr per opacity abgeblendet (das machte ihre Schrift grau); sie sind
+   durch das −∞ und den Durchstrich gekennzeichnet, das genuegt. */
+.diagramm .legende span b, .diagramm .legende b,
+.diagramm .aussage b, .diagramm .bezug b,
+.farbleiste .was b, .tafel b {
+      color: var(--diagrammtext) !important; fill: var(--diagrammtext) !important; }
+.tafel-zeile.raus { opacity: 1; }
+.tafel-zeile.raus .tafel-name { text-decoration: line-through;
+      text-decoration-color: var(--diagrammtext); }
+.tafel-zeile.raus .tafel-zelle .zahl { color: var(--diagrammtext) !important; }
+
+/* ══ DIE EINZIGE AUSNAHME VON DER REGEL DARÜBER ══
+   Eine Fläche, die SELBST eine kräftige Farbe trägt, bringt ihre Schrift
+   mit. Die Regel darüber setzt jedes div und jeden span in einem Diagramm
+   auf --diagrammtext, und zwar mit !important — also auch das, was auf dem
+   dunklen Markenblau eines gewählten Stücks steht.
+
+   In der dunklen Fassung fiel das nie auf: dort IST --diagrammtext weiß,
+   und weiß auf #0a6189 ist richtig. In der hellen Fassung ist es #10161d,
+   und damit stand dunkle Schrift auf dunklem Blau — gemessen 2,68:1 beim
+   Stück und 2,36:1 bei seiner Kennung (pruefe_kontrast.js, 20.08.2026).
+
+   Das widerspricht der Regel darüber nicht, sondern führt sie zu Ende:
+   sie sagt, eine Hervorhebung trage eine FLÄCHE statt einer Schriftfarbe.
+   Wer eine Fläche benutzt, muss dann auch für die Schrift darauf sorgen. */
+.diagramm .tok.aktiv, .diagramm .tok.aktiv span,
+.diagramm .chip.aktiv, .diagramm .chip.aktiv span,
+.diagramm .btn.primaer, .diagramm .btn.primaer span,
+.diagramm .rechenschritt .nr {
+      color: var(--auf-marke) !important; }
+
+/* DIE AUSWAHL ALS FLÄCHE, NICHT ALS SCHRIFTFARBE.
+   Die Weiß-Regel darüber schlägt jede Schriftfarbe — auch das Gelb, mit dem
+   die gewählte Zeile bisher markiert werden sollte. Sie war damit unsichtbar,
+   und die Legende behauptete etwas, das im Bild nicht vorkam. Also genau das,
+   was die Weiß-Regel selbst vorschreibt: ein Rahmen oder eine Fläche. */
+.tafel-zeile.gewaehlt { background: rgb(var(--wahl-rgb) / .14);
+      box-shadow: inset 3px 0 0 var(--wahl); }
+.tafel-zeile.gewaehlt:hover { background: rgb(var(--wahl-rgb) / .2); }
+
+/* Formeln als echte Formeln (MathML in einem foreignObject).
+   Chrome setzt MathML von sich aus — Bruchstrich und Wurzelzeichen
+   kommen damit ohne eine nachgeladene Bibliothek zustande, und das
+   Verzeichnis bleibt ohne Internet lauffaehig. */
+.d3-kette .formelfeld { overflow: visible; }
+.d3-kette .formel { display: flex; justify-content: center;
+      align-items: center; height: 26px;
+      font-family: var(--font-mono); font-size: 12px; color: var(--diagrammtext); }
+.d3-kette .formel math { font-size: 13px; color: var(--diagrammtext); }
+.d3-kette .formel.roh { font-size: 11px; }
+.d3-kette path.pfeil { stroke: var(--diagrammtext); opacity: .75; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   DER UMSCHALTER HELL / DUNKEL
+   Seit dem 20.08.2026. Der Demonstrator wird im Hoersaal projiziert; ein
+   Beamer wirft Licht, kein Dunkel, und die dunkle Fassung war dort
+   unbrauchbar. Beide Fassungen bleiben — die helle ist die Standardfassung.
+
+   Welche Seite hervorgehoben ist, entscheidet allein das Attribut
+   data-fassung auf <html>. Damit steht der Schalter schon beim ersten
+   Bildaufbau richtig, ohne dass ein Skript ihn nachtraeglich setzt.
+   ══════════════════════════════════════════════════════════════════════ */
+.fassung { display: inline-flex; border: 1px solid var(--rand);
+           border-radius: 20px; overflow: hidden; flex: none;
+           background: var(--bg-elev); }
+.fassung button { border: none; background: transparent; cursor: pointer;
+           font-family: var(--font-display); font-size: 11.5px;
+           letter-spacing: .04em; padding: 6px 14px; color: var(--text-muted);
+           transition: background .15s, color .15s; }
+.fassung button:hover { color: var(--text); }
+:root[data-fassung="hell"]   .fassung button[data-fassung="hell"],
+:root[data-fassung="dunkel"] .fassung button[data-fassung="dunkel"] {
+           background: var(--primary-deep); color: var(--auf-marke);
+           font-weight: 600; }
+/* Der aktive Knopf ist kein Ziel mehr — ihn anzuklicken taete nichts. */
+:root[data-fassung="hell"]   .fassung button[data-fassung="hell"],
+:root[data-fassung="dunkel"] .fassung button[data-fassung="dunkel"] {
+           cursor: default; }

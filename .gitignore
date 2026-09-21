@@ -1,0 +1,10 @@
+# Selbst einzurichten - gehoert nicht ins Repo (siehe SETUP.md):
+.venv/
+models/
+python/
+__pycache__/
+*.pyc
+# Laufzeit-/Arbeitsartefakte:
+_server*.log
+_netz.json
+_skizze*.html
