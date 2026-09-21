@@ -1,7 +1,7 @@
 # Laufzeit-Abhaengigkeiten des LLM-Demonstrators.
 # PyTorch separat installieren (siehe SETUP.md) - nicht hier, weil der PyPI-Wheel
 # unter Windows CPU-only ist.
-transformers>=4.51        # Qwen3-Architektur
+transformers>=5.0         # Qwen3-Architektur (getestet 5.17; Referenzumgebung 5.14)
 fastapi>=0.115
 uvicorn>=0.30
 pydantic>=2.0

@@ -6,9 +6,13 @@ eingerichtet. Danach laeuft alles lokal, ohne Internet.
 
 ## Voraussetzungen
 
-- Python 3.11 oder neuer (getestet mit 3.14)
+- **Python 3.13** (empfohlen und getestet). Fuer 3.14 gibt es evtl. noch keine
+  passenden PyTorch-Wheels; 3.12/3.13 sind der sichere Weg.
 - Eine NVIDIA-GPU ist empfehlenswert (das Modell laeuft auch auf CPU, dann langsamer)
 - ~5 GB Platz (Modell ~3,8 GB + PyTorch)
+- **Windows:** in einen KURZEN Pfad klonen (z.B. `C:\dev\lehre-llm-demonstrator`).
+  Sehr lange Pfade brechen die PyTorch/numpy-Installation ab (260-Zeichen-Grenze) -
+  entweder kurzer Pfad oder Long-Path-Support aktivieren.
 
 ## 1) Virtuelle Umgebung anlegen
 
@@ -60,3 +64,12 @@ Jede Station eines Transformers wird sichtbar und ist einzeln nachgerechnet -
 Tokenisierung, Embedding, Attention (Q/K/V, Kopf fuer Kopf), Feedforward, bis zur
 Ausgabe. Eingriffe (Kopf/Schicht/Attention aus- und zuschalten) wirken sich direkt
 auf das Ergebnis aus. Der JavaScript-Rechenkern ist auf PyTorch-Paritaet geprueft.
+
+## Verifiziert
+
+Diese Anleitung wurde aus einer frischen, leeren venv durchgespielt (Python 3.13,
+`torch 2.14 (CPU)`, `transformers 5.17`): Installation laeuft durch, der Server
+startet, `GET /api/gesundheit` meldet `{"bereit":true,"modell":"Qwen3-1.7B"}`, und
+ein echter Forward-Pass (`POST /api/durchlauf`) liefert Attention, Logits und die
+wahrscheinlichsten Folge-Tokens. Auf GPU ist der einzige Unterschied der Torch-Index
+(`cu130` statt `cpu`) - so laeuft die mitgelieferte Referenzumgebung.
